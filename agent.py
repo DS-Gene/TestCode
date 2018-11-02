@@ -101,7 +101,7 @@ class LearningAgent(Agent):
         #   Then, for each action available, set the initial Q-value to 0.0
         if self.learning:
             if state not in self.Q:
-                self.Q[state] = {'right':0.0, 'left':0.0, 'None':0.0, 'forward':0.0}
+                self.Q[state] = {'right':0.0, 'left':0.0, None:0.0, 'forward':0.0}
 
 
         return
