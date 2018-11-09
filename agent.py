@@ -71,7 +71,7 @@ class LearningAgent(Agent):
         # With the hand-engineered features, this learning process gets entirely negated.
         
         # Set 'state' as a tuple of relevant data for the agent        
-        state = (waypoint, inputs['oncoming'], inputs['light'], inputs['left'], inputs['right'])
+        state = (waypoint, inputs['light'], inputs['left'], inputs['right'], inputs['oncoming'])
       
         return state
 
@@ -101,7 +101,8 @@ class LearningAgent(Agent):
         #   Then, for each action available, set the initial Q-value to 0.0
         if self.learning:
             if state not in self.Q:
-                self.Q[state] = {'right':0.0, 'left':0.0, None:0.0, 'forward':0.0}
+                self.Q[state] = {a : 0.0 for a in self.valid_actions}
+                #self.Q[state] = {'right':0.0, 'left':0.0, None:0.0, 'forward':0.0}
 
 
         return
@@ -114,7 +115,7 @@ class LearningAgent(Agent):
         # Set the agent state and default action
         self.state = state
         self.next_waypoint = self.planner.next_waypoint()
-        action = None
+       # action = None
 
         ########### 
         ## TO DO ##
@@ -123,13 +124,22 @@ class LearningAgent(Agent):
         # When learning, choose a random action with 'epsilon' probability
         # Otherwise, choose an action with the highest Q-value for the current state
         # Be sure that when choosing an action with highest Q-value that you randomly select between actions that "tie".
-        if not self.learning:
-            actions = self.valid_actions
+        if self.learning and self.epsilon <= random.random():
+          
+                #action = max(self.Q[state])
+                #action = self.get_maxQ(state)
+            maxQ = self.get_maxQ(state)
+            action = random.choice([action for action in self.valid_actions if self.Q[state][action]==maxQ])
         else:
-            if random.random() <= self.epsilon:
-                actions = self.valid_actions
-            else:
-                action = self.get_maxQ(state)
+            action = random.choice(self.valid_actions)
+
+        #if not self.learning:
+        #    action = random.choice([None, 'left', 'right', 'forward'])
+        #else:
+        #    if random.random() <= self.epsilon:
+        #        actions = self.valid_actions
+        #    else:
+        #        action = self.get_maxQ(state)
 
         return action
 
@@ -174,7 +184,7 @@ def run():
     #   verbose     - set to True to display additional output from the simulation
     #   num_dummies - discrete number of dummy agents in the environment, default is 100
     #   grid_size   - discrete number of intersections (columns, rows), default is (8, 6)
-    env = Environment(verbose=True)
+    env = Environment()
     
     ##############
     # Create the driving agent
@@ -182,7 +192,7 @@ def run():
     #   learning   - set to True to force the driving agent to use Q-learning
     #    * epsilon - continuous value for the exploration factor, default is 1
     #    * alpha   - continuous value for the learning rate, default is 0.5
-    agent = env.create_agent(LearningAgent, learning=True, alpha=0.005, epsilon=0.8)
+    agent = env.create_agent(LearningAgent, learning=True, alpha=0.005, epsilon=1)
     
     ##############
     # Follow the driving agent
@@ -210,7 +220,7 @@ def run():
     #   tolerance  - epsilon tolerance before beginning testing, default is 0.05 
     #   n_test     - discrete number of testing trials to perform, default is 0
 
-    sim.run(n_test=42)
+    sim.run(n_test=42, tolerance=0.0001)
 
 
 if __name__ == '__main__':
